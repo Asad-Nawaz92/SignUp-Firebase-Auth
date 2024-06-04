@@ -1,26 +1,22 @@
-// SIGN UP AND SIGN IN
+const firebaseConfig = {
+  apiKey: "AIzaSyDa1y03PJzImKtToZ7U37cu2O1nkQIC7Vo",
+  authDomain: "signup-auth-474ba.firebaseapp.com",
+  projectId: "signup-auth-474ba",
+  storageBucket: "signup-auth-474ba.appspot.com",
+  messagingSenderId: "132636142418",
+  appId: "1:132636142418:web:91edf99f16e2e048d4a88b"
+};
+
+const fireBase = firebase.initializeApp(firebaseConfig);
 
 function signup() {
-  var nameInput = document.getElementById("signup-name");
   var emailInput = document.getElementById("signup-email");
   var passwordInput = document.getElementById("signup-pass");
-  var confirmpasswordInput = document.getElementById("signup-confirm-pass");
-  var agreeCheckbox = document.getElementById("agree");
 
-  var name = nameInput.value;
   var email = emailInput.value;
   var password = passwordInput.value;
-  var confirmPassword = confirmpasswordInput.value;
-  var agreeChecked = agreeCheckbox.checked;
 
-  var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-  if (
-    name === "" ||
-    confirmPassword === "" ||
-    email === "" ||
-    password === ""
-  ) {
+  if (email === "" || password === "") {
     Swal.fire({
       icon: "error",
       title: "Oops...",
@@ -29,14 +25,7 @@ function signup() {
     return;
   }
 
-  if (!agreeChecked) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Please agree to the terms and conditions.",
-    });
-    return;
-  }
+  var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   if (!emailPattern.test(email)) {
     Swal.fire({
@@ -56,42 +45,26 @@ function signup() {
     return;
   }
 
-  if (password !== confirmPassword) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Passwords do not match.",
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+   .then((userCredential) => {
+      var user = userCredential.user;
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "User account created successfully.",
+      }).then(() => {
+        location.href = "./signin.html";
+      });
+    })
+   .catch((error) => {
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: errorMessage,
+      });
     });
-    return;
-  }
-
-  var usersJSON = localStorage.getItem("users");
-  var users = usersJSON ? JSON.parse(usersJSON) : [];
-
-  var existingUser = users.some(function (user) {
-    return user.email === email;
-  });
-
-  if (existingUser) {
-    Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "User with this email already exists. Please Login.",
-    }).then(() => {
-      location.href = "./signin.html";
-    });
-    return;
-  }
-
-  var newUser = {
-    name: name,
-    email: email,
-    password: password,
-  };
-
-  users.push(newUser);
-  localStorage.setItem("users", JSON.stringify(users));
-  location.href = "./signin.html";
 }
 
 function signin() {
@@ -101,7 +74,7 @@ function signin() {
   var email = emailInput.value;
   var password = passwordInput.value;
 
-  if (email === "" || password === "" || !rememberChecked) {
+  if (email === "" || password === "") {
     Swal.fire({
       icon: "error",
       title: "Oops...",
@@ -121,36 +94,22 @@ function signin() {
     return;
   }
 
-  var usersJSON = localStorage.getItem("users");
-  var users = usersJSON ? JSON.parse(usersJSON) : [];
-
-  var user = users.find(function (e) {
-    return e.email === email && e.password === password;
-  });
-
-  if (user) {
-    location.href = "./welcome.html";
-  } else {
-    if (
-      !users.some(function (e) {
-        return e.email === email;
-      })
-    ) {
+  firebase.auth().signInWithEmailAndPassword(email, password)
+   .then((userCredential) => {
+      var user = userCredential.user;
+      window.location.href = "./welcome.html";
+    })
+   .catch((error) => {
+      var errorCode = error.code;
+      var errorMessage = error.message;
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Invalid email. Please try again.",
+        text: errorMessage,
       });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Invalid password. Please try again.",
-      });
-    }
-  }
+    });
 }
 
-function logOut() {
-  location.href = "./signin.html";
+function logOut(){
+  window.location.href = "./signin.html";
 }
