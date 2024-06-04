@@ -53,7 +53,7 @@ function signup() {
         title: "Success",
         text: "User account created successfully.",
       }).then(() => {
-        location.href = "./signin.html";
+        window.location.href = "./signin.html";
       });
     })
    .catch((error) => {
